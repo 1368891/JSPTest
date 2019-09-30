@@ -1,17 +1,22 @@
 <%@page import="com.gz.kl.user.UserMgr"%>
 <%@page import="com.gz.kl.user.User"%>
 <%@page import="com.gz.kl.util.DBMgr"%>
+<%@page import="javax.servlet.http.HttpSession"%>
+
 <%@ page language="java" import="java.util.*" pageEncoding="GB18030"%>
 <%
 	String path = request.getContextPath();
-String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
+	String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
 %>
 
 <%
 	String username = request.getParameter("username");
 	String password = request.getParameter("password");
 	String login = request.getParameter("login");
-	System.out.println(username + password + login);
+	HttpSession httpSession = request.getSession(true);
+	int pageSize = 0;
+	
+	//System.out.println(username + password + login);
 	if(login == null || username == null || password == null) {
 		response.sendRedirect("login.htm");
 		return;
@@ -20,7 +25,17 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		response.sendRedirect("login.htm");
 		return;
 	}
-	
+	if(UserMgr.getInstance().useVerification(username, password)) {
+		if(httpSession.isNew()) {
+			httpSession.setAttribute("session", "pass");
+		}
+	} else {
+		response.sendRedirect("login.htm");
+		return;
+	}
+	if(request.getParameter("pageSize") != null) {
+		pageSize = Integer.parseInt(request.getParameter("pageSize"));
+	}
 	
 %>
 
@@ -51,7 +66,9 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 			<th>等级</th>
 		</tr>
     <%
-    	List<User> listUsers = UserMgr.getInstance().getUsers();
+    	int length = UserMgr.getInstance().getTableLength();
+    	int pangeNum = 2;
+    	List<User> listUsers = UserMgr.getInstance().getUsers(pageSize*2, pangeNum);
     	Iterator<User> it = listUsers.iterator();
     	while(it.hasNext()) {
     		User user = (User)it.next();
@@ -66,6 +83,13 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
     <%  		
     	}
      %>
-    </table>	
+    </table>
+    <%
+    	int forward = pageSize;
+    	int backward = pageSize;
+     %>
+    <b>第<%= pageSize + 1 %>页</b>&nbsp&nbsp
+    <a href="index.jsp?pageSize=<%= backward <= 0? 0 : --backward%>"><%= pageSize == 0 ? "首页":"上一页" %></a>&nbsp&nbsp
+    <a href="index.jsp?pageSize=<%= forward >= length/pangeNum-1? length/pangeNum-1 : ++forward%>"><%= pageSize == length/pangeNum-1 ? "末页":"下一页" %></a>
   </body>
 </html>
