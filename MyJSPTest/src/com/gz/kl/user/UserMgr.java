@@ -1,6 +1,7 @@
 package com.gz.kl.user;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -88,34 +89,41 @@ public class UserMgr {
 		return length;
 	}
 	
-	public boolean useVerification(String username, String password) {
-		if(username == null || password == null || username.equals("")) {
-			return false;
+	public User useVerification(String username, String password) throws UserNotFoundException,
+	        PasswordErrorException{
+		User user = null;
+		if(username == null || password == null) {
+			return user;
 		}
 		
 		String sql = "select * from user where username='" + username + "';";
-		String pwd = null;
 		
 		Connection conn = DB.getConnection();
 		Statement stat = DB.getStatement(conn);
 		ResultSet rs = DB.getResultSet(stat, sql);
 		try {
-			while(rs.next()) {
-				pwd = rs.getString("psword");
+			if(!rs.next()) {
+				throw new UserNotFoundException("”√ªßŒ¥’“µΩ£°");
 			}
+			if(!password.equals(rs.getString("psword"))) {
+				throw new PasswordErrorException("√‹¬Î¥ÌŒÛ£°");
+			}
+			user = new User();
+			user = this.getUserFromRs(rs);
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			DB.close(rs);
+			DB.close(stat);
+			DB.close(conn);
 		}
-		DB.close(rs);
-		DB.close(stat);
-		DB.close(conn);
-		if(pwd == null) return false;
-		return pwd.equals(password.toString())? true:false;
+		return user;
 	}
 
 	private User getUserFromRs(ResultSet rs) {
 		User user = new User();
 		try {
+			user.setUserId(rs.getInt("userid"));
 			user.setUserName(rs.getString("username"));
 			user.setPhone(rs.getString("phone"));
 			user.setAddress(rs.getString("address"));
@@ -127,4 +135,46 @@ public class UserMgr {
 		return user;
 	}
 	
+	public User getUser(int userId) {
+		User user = null;
+		
+		String sql = "select * from user where userid='" + userId + "';";
+		
+		Connection conn = DB.getConnection();
+		Statement stat = DB.getStatement(conn);
+		ResultSet rs = DB.getResultSet(stat, sql);
+		
+		try {
+			while(rs.next()) {
+				user = this.getUserFromRs(rs);
+			}
+			DB.close(rs);
+			DB.close(stat);
+			DB.close(conn);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return user;
+	}
+	
+	public void modifyUser(String userName, String phone, String address, int userId) {
+		String sql = "update user set username= ? , phone = ? , address = ? where userid = ?";
+		
+		Connection conn = DB.getConnection();
+		PreparedStatement pspStat = DB.getPreparedStatement(conn, sql);
+		
+		try {
+			pspStat.setString(1, userName);
+			pspStat.setString(2, phone);
+			pspStat.setString(3, address);
+			pspStat.setInt(4, userId);
+			pspStat.executeUpdate();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DB.close(pspStat);
+			DB.close(conn);
+		}
+	}
 }

@@ -1,7 +1,7 @@
-<%@page import="com.gz.kl.user.UserMgr"%>
-<%@page import="com.gz.kl.user.User"%>
+<%@page import="com.gz.kl.user.*"%>
 <%@page import="com.gz.kl.util.DBMgr"%>
 <%@page import="javax.servlet.http.HttpSession"%>
+<%@page import="javax.servlet.http.Cookie"%>
 
 <%@ page language="java" import="java.util.*" pageEncoding="GB18030"%>
 <%
@@ -10,29 +10,13 @@
 %>
 
 <%
-	String username = request.getParameter("username");
-	String password = request.getParameter("password");
-	String login = request.getParameter("login");
-	HttpSession httpSession = request.getSession(true);
 	int pageSize = 0;
+	User currentUser = (User)request.getSession().getAttribute("user");
+	if(currentUser == null) {
+		response.sendRedirect("login.jsp");
+		return;
+	}
 	
-	//System.out.println(username + password + login);
-	if(login == null || username == null || password == null) {
-		response.sendRedirect("login.htm");
-		return;
-	}
-	if(!login.equals("login_ok")) {
-		response.sendRedirect("login.htm");
-		return;
-	}
-	if(UserMgr.getInstance().useVerification(username, password)) {
-		if(httpSession.isNew()) {
-			httpSession.setAttribute("session", "pass");
-		}
-	} else {
-		response.sendRedirect("login.htm");
-		return;
-	}
 	if(request.getParameter("pageSize") != null) {
 		pageSize = Integer.parseInt(request.getParameter("pageSize"));
 	}
@@ -64,6 +48,7 @@
 			<th>地址</th>
 			<th>注册时间</th>
 			<th>等级</th>
+			<th>操作</th>
 		</tr>
     <%
     	int length = UserMgr.getInstance().getTableLength();
@@ -79,11 +64,13 @@
     		<td><%=user.getAddress() %></td>
     		<td><%=user.getRegistTime() %></td>
     		<td><%=user.getGrade() %></td>
+    		<td><a href="user/modifyuser.jsp?currentuserid=<%=user.getUserId()%>">改</a>&nbsp<a>删除</a></td>
     	</tr>
     <%  		
     	}
      %>
     </table>
+    <div style="margin-left: 63%; "><a href="user/adduser.jsp" target="blank">增加用户</a></div><br>
     <%
     	int forward = pageSize;
     	int backward = pageSize;

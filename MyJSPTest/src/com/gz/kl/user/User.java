@@ -3,12 +3,19 @@ package com.gz.kl.user;
 import java.sql.Date;
 
 public class User {
+	private int userId;
 	private String userName;
 	private String phone;
 	private String address;
 	private Date registTime;
 	private int grade;
 	
+	public int getUserId() {
+		return userId;
+	}
+	public void setUserId(int userId) {
+		this.userId = userId;
+	}
 	public String getUserName() {
 		return userName;
 	}
