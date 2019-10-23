@@ -3,6 +3,7 @@
 <%@page import="com.gz.kl.user.*"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <%
+request.setCharacterEncoding("gbk");
 String path = request.getContextPath();
 String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
 %>
@@ -19,6 +20,27 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	String userName = request.getParameter("userName");
 	String password1 = request.getParameter("password1");
 	String password2 = request.getParameter("password2");
+	if(request.getParameter("validate") != null && request.getParameter("validate").equals("pass")) {
+		if(userName == null || userName.trim().equals("")) {
+			out.println("用户名不能为空！");
+			return;
+		}
+		if(password1.trim().equals("") || password2.trim().equals("")) {
+			out.println("密码不能为空！");
+			return;
+		}
+		if(!UserMgr.getInstance().useExitCheck(userName)) {
+			if(password1.equals(password2)) {
+				UserMgr.getInstance().addUser(userName,password1,request.getParameter("phone"), request.getParameter("address"));
+			} else if(!password1.equals(password2)) {
+				out.println("密码不一致，请重新修改。");
+				return;
+			}
+		} else {
+			out.println("已经存在该用户名！");
+			return;
+		}
+	}
 %>
 
 <html>

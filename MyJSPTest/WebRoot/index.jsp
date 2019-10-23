@@ -52,6 +52,7 @@
 		</tr>
     <%
     	int length = UserMgr.getInstance().getTableLength();
+    	int maxPageSize = (length%2 == 0) ? length/2 : length/2 + 1;
     	int pangeNum = 2;
     	List<User> listUsers = UserMgr.getInstance().getUsers(pageSize*2, pangeNum);
     	Iterator<User> it = listUsers.iterator();
@@ -64,19 +65,21 @@
     		<td><%=user.getAddress() %></td>
     		<td><%=user.getRegistTime() %></td>
     		<td><%=user.getGrade() %></td>
-    		<td><a href="user/modifyuser.jsp?currentuserid=<%=user.getUserId()%>">改</a>&nbsp<a>删除</a></td>
+    		<td><a href="user/modifyuser.jsp?currentuserid=<%=user.getUserId()%>">改</a>&nbsp
+    			<a href="user/deleteuser.jsp?currentuserid=<%=user.getUserId()%>">删除</a></td>
     	</tr>
     <%  		
     	}
      %>
     </table>
-    <div style="margin-left: 63%; "><a href="user/adduser.jsp" target="blank">增加用户</a></div><br>
+    <div style="margin-left: 62%; "><a href="user/adduser.jsp" target="blank">增加用户</a></div><br>
     <%
     	int forward = pageSize;
     	int backward = pageSize;
      %>
-    <b>第<%= pageSize + 1 %>页</b>&nbsp&nbsp
+    <b>第<%= pageSize + 1 %>页</b> &nbsp &nbsp
     <a href="index.jsp?pageSize=<%= backward <= 0? 0 : --backward%>"><%= pageSize == 0 ? "首页":"上一页" %></a>&nbsp&nbsp
-    <a href="index.jsp?pageSize=<%= forward >= length/pangeNum-1? length/pangeNum-1 : ++forward%>"><%= pageSize == length/pangeNum-1 ? "末页":"下一页" %></a>
+    <a href="index.jsp?pageSize=<%= forward >= length/pangeNum? length/pangeNum : ++forward%>"><%= pageSize == length/pangeNum ? "末页":"下一页" %></a>&nbsp&nbsp
+    <b>总页数:<%= maxPageSize %></b>
   </body>
 </html>
